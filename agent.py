@@ -239,17 +239,39 @@ class HillClimberAgent(Agent):
 
         #initialize the first sequence (random movements)
         bestSeq = []
+        bestH = -9999
         for i in range(seqLen):
             bestSeq.append(random.choice(directions))
 
         #mutate the best sequence until the iterations runs out or a solution sequence is found
         while (iterations < maxIterations):
             iterations += 1
-            
             ## YOUR CODE HERE ##
 
+            # cloning last best sequence
+            current_seq = bestSeq[:]
 
+            # Mutate the current sequence
+            for i in range(len(current_seq)):
+                if random.random() > coinFlip:
+                    current_seq[i] = random.choice(directions)
 
+            # Do playoff using current sequence
+            test_state = state.clone()
+            for s in current_seq:
+                test_state.update(s['x'],s['y'])
+            
+            # Checking if current mutation leads to win
+            if test_state.checkWin() == True:
+                bestSeq = current_seq
+                break
+            
+            h = getHeuristic(test_state) #save the resulting heuristic value from the updated state
+
+            # Update the best sequence to current sequence if it has better heuristic value
+            if h > bestH:
+                bestH = h
+                bestSeq = current_seq[:]
 
         #return the best sequence found
         return bestSeq  
@@ -283,7 +305,7 @@ class GeneticAgent(Agent):
             iterations += 1
 
             #1. evaluate the population
-           
+
 
 
 
