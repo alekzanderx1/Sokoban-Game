@@ -100,19 +100,39 @@ class BFSAgent(Agent):
         iterations = 0
         bestNode = None
         queue = [Node(state.clone(), None, None)]
-        visited = []
+        visited = set()
 
         #expand the tree until the iterations runs out or a solution sequence is found
         while (iterations < maxIterations or maxIterations <= 0) and len(queue) > 0:
             iterations += 1
 
-            # YOUR CODE HERE
+            # POPPING ELEMENT FROM A FIFO QUEUE
+            currentNode = queue.pop(0)
 
+            # Skip this node if already visited
+            if currentNode.getHash() in visited:
+                continue
 
+            # EVALUATE NODE AS WIN STATE
+            if currentNode.checkWin():
+                bestNode = currentNode
+                break;
 
+            # GET NODE'S CHILDREN
+            for child in currentNode.getChildren():
+                # ADD VALID CHILDREN TO QUEUE - In this case add only unvisited nodes
+                if child.getHash() in visited:
+                    continue
+                queue.append(child)
 
-        return []                       #remove me
-        #return bestNode.getActions()   #uncomment me
+            # Marking current node as visited
+            visited.add(currentNode.getHash())
+
+            # SAVE CURRENT BEST NODE 
+            if bestNode is None or currentNode.getHeuristic() < bestNode.getHeuristic():
+                bestNode = currentNode
+
+        return bestNode.getActions()
 
 
 
@@ -123,18 +143,39 @@ class DFSAgent(Agent):
         iterations = 0
         bestNode = None
         queue = [Node(state.clone(), None, None)]
-        visited = []
-        
+        visited = set()
+
         #expand the tree until the iterations runs out or a solution sequence is found
         while (iterations < maxIterations or maxIterations <= 0) and len(queue) > 0:
             iterations += 1
 
-            # YOUR CODE HERE
+            # POPPING ELEMENT FROM A LIFO QUEUE/STACK
+            currentNode = queue.pop(-1)
 
+            # Skip this node if already visited
+            if currentNode.getHash() in visited:
+                continue
 
+            # EVALUATE NODE AS WIN STATE - This may not be the optimal solution as we are using DFS
+            if currentNode.checkWin():
+                bestNode = currentNode
+                break;
 
-        return []                       #remove me
-        #return bestNode.getActions()   #uncomment me
+            # GET NODE'S CHILDREN
+            for child in currentNode.getChildren():
+                # ADD VALID CHILDREN TO QUEUE - In this case add only unvisited nodes
+                if child.getHash() in visited:
+                    continue
+                queue.append(child)
+
+            # Marking current node as visited
+            visited.add(currentNode.getHash())
+
+            # SAVE CURRENT BEST NODE
+            if bestNode is None or currentNode.getHeuristic() < bestNode.getHeuristic():
+                bestNode = currentNode
+
+        return bestNode.getActions()
 
 
 
@@ -149,18 +190,38 @@ class AStarAgent(Agent):
         #initialize priority queue
         queue = PriorityQueue()
         queue.put(Node(state.clone(), None, None))
-        visited = []
+        visited = set()
 
         while (iterations < maxIterations or maxIterations <= 0) and queue.qsize() > 0:
             iterations += 1
 
-            ## YOUR CODE HERE ##
+            #remove and get the node with lowest f(n) value in the Priority Queue
+            currentNode = queue.get()
 
+            # Skip this node if already visited
+            if currentNode.getHash() in visited:
+                continue
 
+            # EVALUATE NODE AS WIN STATE
+            if currentNode.checkWin():
+                bestNode = currentNode
+                break;
 
+            # GET NODE'S CHILDREN
+            for child in currentNode.getChildren():
+                # ADD VALID CHILDREN TO QUEUE - In this case add only unvisited nodes
+                if child.getHash() in visited:
+                    continue
+                queue.put(child)
 
-        return []                       #remove me
-        #return bestNode.getActions()   #uncomment me
+            # Marking current node as visited
+            visited.add(currentNode.getHash())
+
+             # SAVE CURRENT BEST NODE - ie one with lower f(n) value
+            if bestNode is None or currentNode.__lt__(bestNode):
+                bestNode = currentNode
+
+        return bestNode.getActions()
 
 
 #####    ASSIGNMENT 2 AGENTS    #####
