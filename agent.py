@@ -239,7 +239,7 @@ class HillClimberAgent(Agent):
 
         #initialize the first sequence (random movements)
         bestSeq = []
-        bestH = -9999
+        bestH = 99999
         for i in range(seqLen):
             bestSeq.append(random.choice(directions))
 
@@ -269,7 +269,7 @@ class HillClimberAgent(Agent):
             h = getHeuristic(test_state) #save the resulting heuristic value from the updated state
 
             # Update the best sequence to current sequence if it has better heuristic value
-            if h > bestH:
+            if h < bestH:
                 bestH = h
                 bestSeq = current_seq[:]
 
@@ -304,20 +304,29 @@ class GeneticAgent(Agent):
         while (iterations < maxIterations):
             iterations += 1
 
+            win = False
             #1. evaluate the population
+            populationToEvaluate = []
+            for phenotype in population:
+                test_state = state.clone()
+                for s in phenotype:
+                    test_state.update(s['x'],s['y'])
+                
+                if test_state.checkWin():
+                    bestSeq = phenotype
+                    win = True
+                    break
+                h = getHeuristic(test_state)
+                populationToEvaluate.append((h,phenotype))
 
-
-
+            if win:
+                break
 
             #2. sort the population by fitness (low to high)
-
-
-
+            populationToEvaluate.sort()
 
             #2.1 save bestSeq from best evaluated sequence
-
-
-
+            bestSeq = populationToEvaluate[0][1]
 
             #3. generate probabilities for parent selection based on fitness
 
