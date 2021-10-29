@@ -299,12 +299,12 @@ class GeneticAgent(Agent):
             for i in range(seqLen):
                 bestSeq.append(random.choice(directions))
             population.append(bestSeq)
+        win = False
 
         #mutate until the iterations runs out or a solution sequence is found
         while (iterations < maxIterations):
             iterations += 1
 
-            win = False
             #1. evaluate the population
             populationToEvaluate = []
             for phenotype in population:
@@ -319,51 +319,59 @@ class GeneticAgent(Agent):
                 h = getHeuristic(test_state)
                 populationToEvaluate.append((h,phenotype))
 
-            if win:
+            if win == True:
                 break
 
             #2. sort the population by fitness (low to high)
-            populationToEvaluate.sort()
+            populationToEvaluate.sort(key=lambda x:x[0])
 
             #2.1 save bestSeq from best evaluated sequence
             bestSeq = populationToEvaluate[0][1]
 
             #3. generate probabilities for parent selection based on fitness
-
-
-
+            dnr = popSize*(popSize + 1)/2
+            probabilities = []
+            sum = 0
+            for i in range(popSize,0,-1):
+                sum += (i/dnr)
+                probabilities.append(sum)
 
             #4. populate by crossover and mutation
             new_pop = []
             for i in range(int(popSize/2)):
+                offspring = []
                 #4.1 select 2 parents sequences based on probabilities generated
                 par1 = []
                 par2 = []
-                
 
+                r1 = random.random()
+                r2 = random.random()
 
-
+                for j in range(len(probabilities)):
+                    if len(par1) == 0 and r1 < probabilities[j]:
+                        par1 = populationToEvaluate[j][1][:]
+                    if len(par2) == 0 and r2 < probabilities[j]:
+                        par2 = populationToEvaluate[j][1][:]
 
                 #4.2 make a child from the crossover of the two parent sequences
-                offspring = []
-
-                
-
-
+                for k in range(50):
+                     if random.random() > parentRand:
+                         offspring.append(par1[k])
+                     else:
+                         offspring.append(par2[k])
 
                 #4.3 mutate the child's actions
-                
-
-
-
+                if random.random() < mutRand:
+                    randomPos = random.randint(0,49)
+                    offspring[randomPos] = random.choice(directions)
 
                 #4.4 add the child to the new population
-                new_pop.append(list(offspring))
+                new_pop.append(offspring)
 
 
             #5. add top half from last population (mu + lambda)
             for i in range(int(popSize/2)):
-                break           #remove me
+                new_pop.append(populationToEvaluate[i][1])
 
 
             #6. replace the old population with the new one
@@ -484,6 +492,14 @@ class MCTSAgent(Agent):
         visited = []
 
         ## YOUR CODE HERE ##
+        bestChild = curNode
+        maxVisits = -1
+        while curNode is not None:
+            for c in curNode.getChildren(visited):
+                if c.n == 0:
+                    continue
+                if c.
+
 
         return curNode
 
