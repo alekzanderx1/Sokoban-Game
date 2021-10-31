@@ -255,7 +255,7 @@ class HillClimberAgent(Agent):
             # if condition is to prevent mutation for the initial sequence to check if that leads to a win
             if bestHeuristic is not None:
                 for i in range(len(current_seq)):
-                    if random.random() > coinFlip:
+                    if random.random() < coinFlip:
                         current_seq[i] = random.choice(directions)
 
             # Do playoff using the mutated sequence
