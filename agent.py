@@ -239,7 +239,7 @@ class HillClimberAgent(Agent):
 
         #initialize the first sequence (random movements)
         bestSeq = []
-        bestH = 99999
+        bestHeuristic = None
         for i in range(seqLen):
             bestSeq.append(random.choice(directions))
 
@@ -251,27 +251,32 @@ class HillClimberAgent(Agent):
             # cloning last best sequence
             current_seq = bestSeq[:]
 
-            # Mutate the current sequence
-            for i in range(len(current_seq)):
-                if random.random() > coinFlip:
-                    current_seq[i] = random.choice(directions)
+            # Mutate the sequence
+            # if condition is to prevent mutation for the initial sequence to check if that leads to a win
+            if bestHeuristic is not None:
+                for i in range(len(current_seq)):
+                    if random.random() > coinFlip:
+                        current_seq[i] = random.choice(directions)
 
-            # Do playoff using current sequence
+            # Do playoff using the mutated sequence
             test_state = state.clone()
             for s in current_seq:
                 test_state.update(s['x'],s['y'])
-            
-            # Checking if current mutation leads to win
+
+            # Checking if current mutation leads to win, if yes exit with the winning sequence
             if test_state.checkWin() == True:
                 bestSeq = current_seq
                 break
-            
-            h = getHeuristic(test_state) #save the resulting heuristic value from the updated state
 
-            # Update the best sequence to current sequence if it has better heuristic value
-            if h < bestH:
-                bestH = h
+            #save the resulting heuristic value from the updated state
+            h = getHeuristic(test_state) 
+
+            # Update the best sequence to current sequence if it has better heuristic value 
+            # here, lower heuristic value is better since heuristic value is the distance to win state
+            if (bestHeuristic is None) or h < bestHeuristic :
+                bestHeuristic = h
                 bestSeq = current_seq[:]
+
 
         #return the best sequence found
         return bestSeq  
@@ -355,15 +360,15 @@ class GeneticAgent(Agent):
 
                 #4.2 make a child from the crossover of the two parent sequences
                 for k in range(50):
-                     if random.random() > parentRand:
+                     if random.random() < parentRand:
                          offspring.append(par1[k])
                      else:
                          offspring.append(par2[k])
 
-                #4.3 mutate the child's actions
-                if random.random() < mutRand:
-                    randomPos = random.randint(0,49)
-                    offspring[randomPos] = random.choice(directions)
+                #4.3 mutate the child's actions            
+                for i in range(len(offspring)):
+                    if random.random() < mutRand:
+                        offspring[i] = random.choice(directions)
 
                 #4.4 add the child to the new population
                 new_pop.append(offspring)
@@ -492,14 +497,14 @@ class MCTSAgent(Agent):
         visited = []
 
         ## YOUR CODE HERE ##
-        bestChild = curNode
-        maxVisits = -1
-        while curNode is not None:
-            for c in curNode.getChildren(visited):
-                if c.n == 0:
-                    continue
-                if c.
-
+        while curNode.checkWin() == False:
+            children = curNode.getChildren(visited)
+            for child in children:
+                if child.checkWin():
+                    return child
+                if child.n == 0:
+                    return child
+            curNode = self.bestChildUCT(curNode)
 
         return curNode
 
@@ -509,29 +514,43 @@ class MCTSAgent(Agent):
     def bestChildUCT(self, node):
         c = 1               #c value in the exploration/exploitation equation
         bestChild = None
-
+        scoreToChildList = []
+        constantNumerator = 2*math.log(node.n)
         ## YOUR CODE HERE ##
-
-
-
+        for child in node.getChildren(list()):
+            if child.n != 0:
+                result = (child.q/child.n) + c*math.sqrt(constantNumerator/child.n)
+                scoreToChildList.append((result,child))
+        scoreToChildList.sort()
+        # Get the child with highest value according to UCT equation
+        bestChild = scoreToChildList[-1][1]
         return bestChild
 
 
 
-     #simulates a score based on random actions taken
+    #simulates a score based on random actions taken
     def rollout(self,node):
         numRolls = 7        #number of times to rollout to
-
+        clonedState = node.state.clone()
         ## YOUR CODE HERE ##
+        for i in range(numRolls):
+            if clonedState.checkWin():
+                break
+            randomDirection = random.choice(directions)
+            clonedState.update(randomDirection['x'],randomDirection['y'])
 
-        return 0
+        return node.calcEvalScore(clonedState)
 
 
 
-     #updates the score all the way up to the root node
+    #updates the score all the way up to the root node
     def backpropogation(self, node, score):
         
         ## YOUR CODE HERE ##
+        while node is not None:
+            node.n +=1
+            node.q = node.q + score
+            node = node.parent
 
         return
         
